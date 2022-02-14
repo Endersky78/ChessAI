@@ -83,15 +83,22 @@ class Chessboard():
                 self.board[x].append(None)
 
     def PrintBoard(self):
-        for rank in range(self.BOARD_SIZE):
-            print(f"{chr(rank+65)}", end = " ")
+        print(" ", end = " ")
+        for rank in range(self.BOARD_SIZE+1):
             for file in range(self.BOARD_SIZE+1):
-                if file == self.BOARD_SIZE:
-                    print(f"{file}", end = " ")
-                elif self.board[rank][file] == None:
+                if rank == 0:
+                    if file != self.BOARD_SIZE:
+                        print(f"{chr(file+65)}", end = " ")
+                    continue
+                if file == 0:
+                    print(f"{rank}", end = " ")
+                    continue
+                elif self.board[rank-1][file-1] == None:
                     print("X", end = " ")
+                    continue
                 else:
-                    print(self.board[rank][file].PieceChar, end = " ")
+                    print(self.board[rank-1][file-1].PieceChar, end = " ")
+                    continue
             print()
                 
 

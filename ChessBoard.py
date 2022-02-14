@@ -4,6 +4,7 @@ from abc import ABC, abstractclassmethod
 FILE = 0
 RANK = 1
 UPPERCASE_OFFSET = 65
+LOWERCASE_OFFSET = 97
 
 def GetFileAsInt(file):
     return ord(file)-UPPERCASE_OFFSET
@@ -76,6 +77,8 @@ class Pawn(ChessPiece):
 class Chessboard():
     BOARD_SIZE = 8
     board = [[]]
+    whiteTurn = True
+    blackTurn = False
 
     def __init__(self):
         for x in range(self.BOARD_SIZE):
@@ -124,6 +127,19 @@ class Chessboard():
         for x in range(8):
             pawn = Pawn(("A", 1), "Black", "P")
             self.PlacePiece(pawn, (chr(x+UPPERCASE_OFFSET), 6))
+
+    def ParseInput(self, input):
+        #assuming pawn input
+        if ord(input[0]) in range(LOWERCASE_OFFSET, LOWERCASE_OFFSET+7):
+            if int(input[1] in range(1, 8)):
+                if self.whiteTurn:
+                    self.MovePiece((input[FILE], input[RANK]-1), input)
+                    return
+                else:
+                    self.MovePiece((input[FILE], input[RANK]+1), input)
+                    return
+
+        print("ERROR: This was not a valid move!!")
 
 def main():
     board = Chessboard()

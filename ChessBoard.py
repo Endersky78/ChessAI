@@ -27,9 +27,6 @@ class ChessPiece():
 class Pawn(ChessPiece):
     doubleMoved = False
 
-    def MovePiece(self, toPos):
-        pass
-
     def PossibleMoves(self):
         pass
 
@@ -103,16 +100,33 @@ class Chessboard():
                 
 
     def GetPieceAtPos(self, position):
-        pass
+        return self.board[position[FILE]][position[RANK]]
+
+    def DeletePieceAtPos(self, position):
+        self.board[position[FILE]][position[RANK]] = None
 
     def PlacePiece(self, piece, position):
-        self.board[position[RANK]][position[FILE]] = piece
+        self.board[position[FILE]][position[RANK]] = piece
+
+    def MovePiece(self, origPos, newPos):
+        if self.GetPieceAtPos(origPos).IsMoveValid(newPos):
+            self.PlacePiece(self.GetPieceAtPos(origPos), newPos)
+            self.DeletePieceAtPos(origPos)
+
+    def SetBoard(self):
+        for x in range(8):
+            pawn = Pawn(("A", 1), "White", "P")
+            self.PlacePiece(pawn, (1, x))
+
+        for x in range(8):
+            pawn = Pawn(("A", 1), "Black", "P")
+            self.PlacePiece(pawn, (6, x))
 
 def main():
     board = Chessboard()
-    pawn = Pawn(("A", 1), "White", "P")
-    board.PlacePiece(pawn, (1, 1))
+    board.SetBoard()
     board.PrintBoard()
+    board.MovePiece((1, 1), (1, 2))
 
 if __name__ == "__main__":
     main()

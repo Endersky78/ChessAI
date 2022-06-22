@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import copy
 from abc import ABC, abstractclassmethod
 
 FILE = 0
@@ -10,11 +11,7 @@ def GetFileAsInt(file):
     return ord(file)-UPPERCASE_OFFSET
 
 class ChessPiece():
-    Position = ()
-    Color = ""
-    PieceChar = ""
 
-    @abstractclassmethod
     def __init__(self, currentPos, color, pieceChar):
         self.Position = currentPos
         self.Color = color
@@ -36,7 +33,7 @@ class Pawn(ChessPiece):
         pass
 
     def IsMoveValid(self, board, toPos):
-        if self.Color == "White":
+        if self.Color == "Black":
             if toPos[RANK] == self.Position[RANK]-1:
                 if GetFileAsInt(self.Position[FILE]) == GetFileAsInt(self.Position[FILE]):
                     return True
@@ -52,9 +49,11 @@ class Pawn(ChessPiece):
                                 return True
                             else:
                                 return False
+            elif toPos[RANK] == self.Position[RANK]-2 and self.Position[RANK] == 6:
+                return True
             else:
                 return False
-        if self.Color == "Black":
+        if self.Color == "White":
             if toPos[RANK] == self.Position[RANK]+1:
                 if GetFileAsInt(self.Position[FILE]) == GetFileAsInt(self.Position[FILE]):
                     return True
@@ -70,6 +69,8 @@ class Pawn(ChessPiece):
                                 return True
                             else:
                                 return False
+            elif toPos[RANK] == self.Position[RANK]+2 and self.Position[RANK] == 1:
+                return True
             else:
                 return False
 
@@ -79,6 +80,7 @@ class Chessboard():
     board = [[]]
     whiteTurn = True
     blackTurn = False
+    turnNum = 1
 
     def __init__(self):
         for x in range(self.BOARD_SIZE):
@@ -88,14 +90,16 @@ class Chessboard():
 
     def PrintBoard(self):
         print(" ", end = " ")
-        for rank in range(self.BOARD_SIZE+1):
+        for rank in reversed(range(self.BOARD_SIZE+2)):
             for file in range(self.BOARD_SIZE+1):
+                if rank == self.BOARD_SIZE+1:
+                    if file != 0:
+                        print(chr((file-1)+UPPERCASE_OFFSET), end = " ")
+                    continue
                 if rank == 0:
-                    if file != self.BOARD_SIZE:
-                        print(f"{chr(file+UPPERCASE_OFFSET)}", end = " ")
                     continue
                 if file == 0:
-                    print(f"{rank}", end = " ")
+                    print(rank, end = " ")
                     continue
                 elif self.board[rank-1][file-1] == None:
                     print("X", end = " ")
@@ -112,21 +116,26 @@ class Chessboard():
         self.board[position[RANK]][GetFileAsInt(position[FILE])] = None
 
     def PlacePiece(self, piece, position):
-        self.board[position[RANK]][GetFileAsInt(position[FILE])] = piece
+        self.board[position[RANK]][GetFileAsInt(position[FILE])] = copy.deepcopy(piece)
 
     def MovePiece(self, origPos, newPos):
-        if self.GetPieceAtPos(origPos).IsMoveValid(self.board, newPos):
-            self.PlacePiece(self.GetPieceAtPos(origPos), newPos)
-            self.DeletePieceAtPos(origPos)
+        piece = self.GetPieceAtPos(origPos)
+        if (piece):
+            if piece.IsMoveValid(self.board, newPos):
+                self.PlacePiece(piece, newPos)
+                self.DeletePieceAtPos(origPos)
+            else:
+                raise ValueError("This was not a valid move!")
+        else:
+            raise ValueError("No piece at this position!")
 
     def SetBoard(self):
         for x in range(8):
+            pawn = Pawn((chr(x+UPPERCASE_OFFSET), 6), "Black", "P")
+            self.PlacePiece(pawn, (chr(x+UPPERCASE_OFFSET), 6))
+
             pawn = Pawn((chr(x+UPPERCASE_OFFSET), 1), "White", "P")
             self.PlacePiece(pawn, (chr(x+UPPERCASE_OFFSET), 1))
-
-        for x in range(8):
-            pawn = Pawn(("A", 1), "Black", "P")
-            self.PlacePiece(pawn, (chr(x+UPPERCASE_OFFSET), 6))
 
     def ParseInput(self, input):
         #assuming pawn input
@@ -139,13 +148,14 @@ class Chessboard():
                     self.MovePiece((input[FILE], input[RANK]+1), input)
                     return
 
-        print("ERROR: This was not a valid move!!")
+        raise ValueError("This was not a valid move!")
 
 def main():
     board = Chessboard()
     board.SetBoard()
     board.PrintBoard()
-    board.MovePiece(("A", 1), ("A", 2))
+    board.MovePiece(("E", 1), ("E", 3))
+    board.MovePiece(("E", 6), ("E", 4))
     board.PrintBoard()
 
 if __name__ == "__main__":

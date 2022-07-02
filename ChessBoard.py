@@ -54,6 +54,7 @@ class Pawn(ChessPiece):
             else:
                 return False
         if self.Color == "White":
+            print(f"To: {toPos[RANK]} From: {self.Position[RANK]}")
             if toPos[RANK] == self.Position[RANK]+1:
                 if GetFileAsInt(self.Position[FILE]) == GetFileAsInt(self.Position[FILE]):
                     return True
@@ -117,6 +118,7 @@ class Chessboard():
 
     def PlacePiece(self, piece, position):
         self.board[position[RANK]][GetFileAsInt(position[FILE])] = copy.deepcopy(piece)
+        self.board[position[RANK]][GetFileAsInt(position[FILE])].Position = position
 
     def MovePiece(self, origPos, newPos):
         piece = self.GetPieceAtPos(origPos)
@@ -139,13 +141,20 @@ class Chessboard():
 
     def ParseInput(self, input):
         #assuming pawn input
-        if ord(input[0]) in range(LOWERCASE_OFFSET, LOWERCASE_OFFSET+7):
-            if int(input[1] in range(1, 8)):
+        inputTuple = (input[0].upper(), int(input[1])-1)
+        if ord(inputTuple[FILE]) in range(UPPERCASE_OFFSET, UPPERCASE_OFFSET+8):
+            if inputTuple[RANK] in range(0, 8):
                 if self.whiteTurn:
-                    self.MovePiece((input[FILE], input[RANK]-1), input)
+                    if self.GetPieceAtPos((inputTuple[FILE], inputTuple[RANK]-1)):
+                        self.MovePiece((inputTuple[FILE], inputTuple[RANK]-1), inputTuple)
+                    else:
+                        self.MovePiece((inputTuple[FILE], inputTuple[RANK]-2), inputTuple)
                     return
                 else:
-                    self.MovePiece((input[FILE], input[RANK]+1), input)
+                    if self.GetPieceAtPos((inputTuple[FILE], inputTuple[RANK]+1)):
+                        self.MovePiece((inputTuple[FILE], inputTuple[RANK]+1), inputTuple)
+                    else:
+                        self.MovePiece((inputTuple[FILE], inputTuple[RANK]+2), inputTuple)
                     return
 
         raise ValueError("This was not a valid move!")
@@ -153,10 +162,13 @@ class Chessboard():
 def main():
     board = Chessboard()
     board.SetBoard()
-    board.PrintBoard()
-    board.MovePiece(("E", 1), ("E", 3))
-    board.MovePiece(("E", 6), ("E", 4))
-    board.PrintBoard()
+    
+    while True:
+        board.PrintBoard()
+        move = input("Enter your move: ")
+        board.ParseInput(move)
+        board.blackTurn = not board.blackTurn
+        board.whiteTurn = not board.whiteTurn
 
 if __name__ == "__main__":
     main()
